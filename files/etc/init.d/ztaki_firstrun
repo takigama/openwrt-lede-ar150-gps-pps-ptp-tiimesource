@@ -1,0 +1,26 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2014 OpenWrt.org
+
+START=99
+
+start() {
+	if [ ! -f /etc/.taki_firstrun ]
+	then
+		echo "Doing first boot for taki"
+		touch /etc/.taki_firstrun
+
+		for i in acme babeld batmand bird4 bird6 \
+			ddns firewall gpsd netdata ntpd olsrd olsrd6 \
+			openvpn socat sysntpd urandom_seed htpdate
+		do
+			echo getting rid of $i
+			/etc/init.d/$i stop
+			/etc/init.d/$i disable
+		done
+
+		echo "lastly, reboot"
+		reboot
+	fi
+
+		
+}
