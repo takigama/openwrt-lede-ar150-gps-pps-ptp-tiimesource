@@ -1,16 +1,17 @@
 #!/bin/sh /etc/rc.common
 # Copyright (C) 2014 OpenWrt.org
 
-START=99
+START=40
 
 start() {
+
 	if [ ! -f /etc/.taki_firstrun ]
 	then
 		echo "Doing first boot for taki"
 		touch /etc/.taki_firstrun
 
 		for i in acme babeld batmand bird4 bird6 \
-			ddns firewall gpsd netdata ntpd olsrd olsrd6 \
+			ddns firewall netdata ntpd olsrd olsrd6 \
 			openvpn socat sysntpd urandom_seed htpdate
 		do
 			echo getting rid of $i
@@ -18,8 +19,44 @@ start() {
 			/etc/init.d/$i disable
 		done
 
+		# create default ptp config
+		rm -rf /etc/ptp
+		cp -r /etc/taki/ptp /etc/ptp
+
+		# chrony...
+		rm -rf /etc/chrony
+		cp -r /etc/taki/chrony /etc/chrony
+
+		# inittab
+		cat /etc/taki/inittab > /etc/inittab
+
+		# overright network and wireless configs
+		cat /etc/taki/config/network > /etc/config/network
+		cat /etc/taki/config/firewall > /etc/config/firewall
+		cat /etc/taki/config/wireless > /etc/config/wireless
+		cat /etc/taki/config/gpsd > /etc/config/gpsd
+
+
 		echo "lastly, reboot"
+		date >> /etc/taki/firstboot
 		reboot
+	else
+		echo "startup for normal serial ops"
+		
+		# Create a few devs we'll need
+		chmod a+r /dev/pps0
+		/bin/ln -s /dev/ttyATH0 /dev/gps0
+		/bin/ln -s /dev/pps0 /dev/gpspps0
+
+		# set up our serial port
+		setserial /dev/ttyATH0 low_latency 
+		stty -F /dev/ttyATH0 9600 
+
+		# turn on the gps
+		echo 17 > /sys/class/gpio/export
+		echo out > /sys/class/gpio/gpio17/direction
+		echo 1 > /sys/class/gpio/gpio17/value
+
 	fi
 
 		
