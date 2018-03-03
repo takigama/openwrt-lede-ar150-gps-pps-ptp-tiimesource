@@ -37,9 +37,13 @@ start() {
 		cat /etc/taki/config/gpsd > /etc/config/gpsd
 
 
-		echo "lastly, reboot"
+		echo "lastly, restart the affected services"
 		date >> /etc/taki/firstboot
-		reboot
+		for i in network gpsd chronyd
+		do
+			/etc/init.d/$i restart
+		done
+		#reboot
 	else
 		echo "startup for normal serial ops"
 		
