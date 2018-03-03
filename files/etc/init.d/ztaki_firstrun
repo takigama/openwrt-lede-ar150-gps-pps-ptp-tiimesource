@@ -73,6 +73,9 @@ start() {
 		echo out > /sys/class/gpio/gpio17/direction
 		echo 1 > /sys/class/gpio/gpio17/value
 
+		# lastly, start ptp
+		/usr/sbin/ptp4l -f /etc/ptp/ptp4l.conf -i eth0 -i eth1 > /dev/null 2>&1 &
+
 	fi
 
 		
