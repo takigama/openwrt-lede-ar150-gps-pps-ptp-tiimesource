@@ -35,17 +35,29 @@ start() {
 		cat /etc/taki/config/firewall > /etc/config/firewall
 		cat /etc/taki/config/wireless > /etc/config/wireless
 		cat /etc/taki/config/gpsd > /etc/config/gpsd
+		cat /etc/taki/config/chrony > /etc/config/chrony
 
 
 		echo "lastly, restart the affected services"
 		date >> /etc/taki/firstboot
 		for i in network gpsd chronyd
 		do
-			/etc/init.d/$i restart
+			/etc/init.d/$i stop
 		done
-		#reboot
+
+		# now reestart us so we deal with the normal things
+                /etc/init.d/ztaki_firstrun start
+
+		for i in network gpsd chronyd
+		do
+			/etc/init.d/$i start
+		done
+
+
 	else
 		echo "startup for normal serial ops"
+
+		date >> /etc/taki/lastboot
 		
 		# Create a few devs we'll need
 		chmod a+r /dev/pps0

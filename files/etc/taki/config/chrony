@@ -1,0 +1,7 @@
+config dhcp_ntp_server
+        option iburst 'yes'
+
+config makestep
+        option threshold '1.0'
+        option limit '3'
+
